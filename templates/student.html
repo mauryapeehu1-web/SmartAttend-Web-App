@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartAttend – Student</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f2b01e'/%3E%3Cpath d='M9 17l5 5 9-11' fill='none' stroke='%230e2330' stroke-width='3.5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body data-page="student">
+  <div class="topbar">
+    <div class="brand"><span class="mark"></span>SmartAttend <small>Student</small></div>
+    <div class="user"><span>{{ name }}</span><a href="{{ url_for('logout') }}">Logout</a></div>
+  </div>
+
+  <div class="container">
+    <section class="hero">
+      <div>
+        <p class="hello">Welcome back</p>
+        <h1>{{ name }}</h1>
+        <div class="meta"><span>Class <b id="st-class">–</b></span><span>Roll no. <b id="st-roll">–</b></span>
+          <a class="btn-link light" href="{{ url_for('my_report_card') }}" target="_blank" rel="noopener">Report card</a></div>
+      </div>
+      <div class="ring" id="ring"><div><div class="num" id="st-overall">–</div><div class="label">overall</div></div></div>
+    </section>
+
+    <div class="card" id="standingCard">
+      <div class="row" style="margin-bottom:10px"><h3 style="margin:0;flex:1">Academic standing</h3><span id="standingBadge"></span></div>
+      <div class="standing-rings" id="standingRings"></div>
+      <div id="standingNotes"></div>
+    </div>
+
+    <div id="alerts"></div>
+
+
+    <div class="card">
+      <h3>Subject-wise attendance</h3>
+      <div class="chart-box"><canvas id="subjectChart"></canvas></div>
+    </div>
+
+    <div class="card" id="trendSection">
+      <div class="row" style="margin-bottom:6px">
+        <h3 style="margin:0; flex:1">Attendance over time</h3>
+        <div style="max-width:160px"><select id="trendBy"><option value="month">Monthly</option><option value="week">Weekly</option></select></div>
+      </div>
+      <div class="chart-box"><canvas id="trendChart"></canvas></div>
+      <div id="trendNote" class="empty"></div>
+    </div>
+
+    <div class="card table-wrap">
+      <h3>Subject summary</h3>
+      <div id="summaryTable"></div>
+    </div>
+
+    <div class="card table-wrap" id="marksSection">
+      <h3>Marks &amp; results</h3>
+      <div class="subject-tiles" id="marksSubjects"></div>
+      <div id="marksTable"></div>
+    </div>
+
+    <div class="card table-wrap" id="assignSection">
+      <h3>Assignments</h3>
+      <div id="assignTable"></div>
+    </div>
+
+    <div class="card table-wrap" id="historySection">
+      <div class="row" style="margin-bottom:6px">
+        <h3 style="margin:0; flex:1">Attendance history</h3>
+        <div style="max-width:260px"><select id="historyFilter"></select></div>
+      </div>
+      <div id="historyTable"></div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

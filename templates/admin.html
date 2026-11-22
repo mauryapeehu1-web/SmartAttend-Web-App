@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartAttend – Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f2b01e'/%3E%3Cpath d='M9 17l5 5 9-11' fill='none' stroke='%230e2330' stroke-width='3.5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body data-page="admin">
+  <div class="topbar">
+    <div class="brand"><span class="mark"></span>SmartAttend <small>Admin</small></div>
+    <div class="user"><span>{{ name }}</span><a href="{{ url_for('logout') }}">Logout</a></div>
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="dash">Dashboard</button>
+      <button class="tab-btn" data-tab="approvals">Approvals <span class="badge warn" id="pendingBadge" style="margin-left:4px">0</span></button>
+      <button class="tab-btn" data-tab="students">Students</button>
+      <button class="tab-btn" data-tab="teachers">Teachers</button>
+      <button class="tab-btn" data-tab="subjects">Subjects</button>
+      <button class="tab-btn" data-tab="reports">Reports</button>
+      <button class="tab-btn" data-tab="settings">Access &amp; Settings</button>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="tab active" id="tab-dash">
+      <div class="stats">
+        <div class="stat"><div class="num" id="st-students">–</div><div class="label">Approved students</div></div>
+        <div class="stat"><div class="num" id="st-teachers">–</div><div class="label">Approved teachers</div></div>
+        <div class="stat"><div class="num" id="st-pending">–</div><div class="label">Pending approvals</div></div>
+        <div class="stat"><div class="num" id="st-subjects">–</div><div class="label">Subjects</div></div>
+        <div class="stat"><div class="num" id="st-overall">–</div><div class="label">Overall attendance</div></div>
+      </div>
+      <div class="card">
+        <h3>Attendance % by subject</h3>
+        <div class="chart-box"><canvas id="subjectChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Approvals -->
+    <div class="tab" id="tab-approvals">
+      <div class="card table-wrap">
+        <h3>Pending student &amp; teacher requests</h3>
+        <p style="color:var(--muted);margin-top:0">Approve accounts so users can log in, or reject/delete requests.</p>
+        <div id="pendingTable"></div>
+      </div>
+    </div>
+
+    <!-- Students -->
+    <div class="tab" id="tab-students">
+      <div class="card">
+        <h3>Add student (auto-approved)</h3>
+        <form class="inline" id="studentForm">
+          <div><label>Full name</label><input name="name" required></div>
+          <div><label>Roll no.</label><input name="roll_no" required></div>
+          <div><label>Class</label><input name="class_name" placeholder="e.g. CSE-A" required></div>
+          <div><label>Username</label><input name="username" required></div>
+          <div><label>Password (min 6)</label><input name="password" type="password" required minlength="6"></div>
+          <div><button class="btn" type="submit">Add student</button></div>
+        </form>
+      </div>
+      <div class="card table-wrap">
+        <div class="row" style="margin-bottom:6px"><h3 style="margin:0;flex:1">Approved students</h3>
+          <div style="max-width:260px"><input type="search" id="studentSearch" placeholder="Search name, roll no. or class…"></div></div>
+        <div id="studentTable"></div></div>
+    </div>
+
+    <!-- Teachers -->
+    <div class="tab" id="tab-teachers">
+      <div class="card">
+        <h3>Add teacher (auto-approved)</h3>
+        <form class="inline" id="teacherForm">
+          <div><label>Full name</label><input name="name" required></div>
+          <div><label>Username</label><input name="username" required></div>
+          <div><label>Password (min 6)</label><input name="password" type="password" required minlength="6"></div>
+          <div><button class="btn" type="submit">Add teacher</button></div>
+        </form>
+      </div>
+      <div class="card table-wrap">
+        <div class="row" style="margin-bottom:6px"><h3 style="margin:0;flex:1">Approved teachers</h3>
+          <div style="max-width:260px"><input type="search" id="teacherSearch" placeholder="Search name or username…"></div></div>
+        <div id="teacherTable"></div></div>
+    </div>
+
+    <!-- Subjects -->
+    <div class="tab" id="tab-subjects">
+      <div class="card">
+        <h3>Add subject</h3>
+        <form class="inline" id="subjectForm">
+          <div><label>Subject name</label><input name="name" required></div>
+          <div><label>Code</label><input name="code" required></div>
+          <div><label>Class</label><input name="class_name" placeholder="e.g. CSE-A" required></div>
+          <div><label>Teacher</label><select name="teacher_id" id="teacherSelect" required></select></div>
+          <div><button class="btn" type="submit">Add subject</button></div>
+        </form>
+      </div>
+      <div class="card table-wrap"><h3>All subjects</h3><div id="subjectTable"></div></div>
+    </div>
+
+    <!-- Reports -->
+    <div class="tab" id="tab-reports">
+      <div class="card">
+        <h3>Attendance report &amp; defaulters</h3>
+      <div class="row">
+        <div><label>Subject</label><select id="rSubject"></select></div>
+        <div><label>From</label><input type="date" id="rFrom"></div>
+        <div><label>To</label><input type="date" id="rTo"></div>
+        <div style="flex:0 0 auto;min-width:0"><label class="check"><input type="checkbox" id="rLow"> Below minimum only</label></div>
+      </div>
+      <div class="row">
+        <div style="flex:0 0 auto;min-width:0">
+          <button class="btn" id="rShow">Show report</button>
+          <button class="btn secondary" id="rLowBtn">Defaulters list</button>
+          <button class="btn secondary" id="rCsv">Download CSV</button>
+        </div>
+        <div><input type="search" id="rSearch" placeholder="Search name or roll no…"></div>
+      </div>
+      </div>
+      <div class="card table-wrap"><div id="reportTable"><div class="empty">Choose filters and click “Show report”.</div></div></div>
+
+      <div class="card table-wrap">
+        <div class="row" style="margin-bottom:6px">
+          <h3 style="margin:0;flex:1">Student overview</h3>
+          <div style="max-width:220px"><select id="riskFilter" aria-label="Filter students">
+            <option value="">All students</option><option value="risk">At risk</option><option value="watch">Needs attention</option>
+            <option value="flagged">At risk + needs attention</option><option value="ok">On track</option></select></div>
+          <div style="max-width:240px"><input type="search" id="riskSearch" placeholder="Search name or roll no…"></div>
+          <div style="flex:0 0 auto;min-width:0"><button class="btn secondary" id="riskBtn">Refresh</button></div>
+        </div>
+        <p class="muted" id="riskCount" style="margin-bottom:10px"></p>
+        <p class="muted">Every student with their standing — flagged for low attendance, low published marks, or two or more missing assignments. Across all subjects. Open any student's report card with the link in each row.</p>
+        <div id="riskTable"></div>
+      </div>    </div>
+
+    <!-- Access & Settings -->
+    <div class="tab" id="tab-settings">
+      <form id="settingsForm">
+        <div class="card">
+          <h3>Registration &amp; Attendance Threshold</h3>
+          <div class="row">
+            <div style="max-width:240px">
+              <label for="cfgLowAttendance">Minimum attendance %</label>
+              <input type="number" min="1" max="100" id="cfgLowAttendance" name="low_attendance" required>
+            </div>
+            <div style="max-width:240px">
+              <label for="cfgLowMarks">Minimum marks %</label>
+              <input type="number" min="1" max="100" id="cfgLowMarks" name="low_marks" required>
+            </div>
+            <div>
+              <label class="check"><input type="checkbox" name="allow_student_signup"> Allow new students to sign up (pending admin approval)</label>
+              <label class="check"><input type="checkbox" name="allow_teacher_signup"> Allow new teachers to sign up (pending admin approval)</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Teacher Access Controls</h3>
+          <label class="check"><input type="checkbox" name="teacher_can_mark"> Teachers can mark new attendance</label>
+          <label class="check"><input type="checkbox" name="teacher_can_edit"> Teachers can edit previously marked attendance</label>
+          <label class="check"><input type="checkbox" name="teacher_can_reports"> Teachers can view reports &amp; download CSV</label>
+          <label class="check"><input type="checkbox" name="teacher_allow_future_dates"> Teachers can mark attendance for future dates</label>
+          <label class="check"><input type="checkbox" name="teacher_can_manage_academics"> Teachers can create assessments, enter marks and post assignments</label>
+        </div>
+
+        <div class="card">
+          <h3>Student Access Controls</h3>
+          <label class="check"><input type="checkbox" name="student_can_view_history"> Students can view detailed attendance history</label>
+          <label class="check"><input type="checkbox" name="student_can_view_trend"> Students can view monthly/weekly attendance trend chart</label>
+          <label class="check"><input type="checkbox" name="student_can_view_alerts"> Students can view low-attendance warning alerts</label>
+          <label class="check"><input type="checkbox" name="student_can_view_marks"> Students can view their published marks &amp; grades</label>
+          <label class="check"><input type="checkbox" name="student_can_view_class_avg"> Students can see the class average for each assessment</label>
+          <label class="check"><input type="checkbox" name="student_can_view_assignments"> Students can view assignments, status &amp; feedback</label>
+        </div>
+
+        <button class="btn" type="submit">Save access settings</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

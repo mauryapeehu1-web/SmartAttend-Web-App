@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartAttend – Log in</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f2b01e'/%3E%3Cpath d='M9 17l5 5 9-11' fill='none' stroke='%230e2330' stroke-width='3.5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="login-page" data-page="login"
+      data-allow-student="{{ '1' if allow_student_signup else '0' }}"
+      data-allow-teacher="{{ '1' if allow_teacher_signup else '0' }}">
+  <div class="login-shell">
+    <aside class="login-art">
+      <div class="brand"><span class="mark"></span>SmartAttend</div>
+      <div>
+        <h2>Every class, accounted for.</h2>
+        <p>Mark attendance in seconds, and let students see where they stand before it becomes a problem.</p>
+      </div>
+      <div class="register" id="register" aria-hidden="true"></div>
+    </aside>
+
+    <main class="login-main">
+      <div class="login-box" style="max-width:460px">
+        <div class="auth-switch" style="display:flex;gap:8px;margin-bottom:18px">
+          <button type="button" class="btn" id="showLoginBtn" style="flex:1">Log in</button>
+          <button type="button" class="btn secondary" id="showSignupBtn" style="flex:1">Create account</button>
+        </div>
+
+        <div id="loginPanel">
+          <h1>Log in</h1>
+          <p class="sub">Use the username and password from your college.</p>
+
+          <form id="loginForm" autocomplete="off">
+            <div class="field">
+              <label for="username">Username</label>
+              <input id="username" required autofocus>
+            </div>
+            <div class="field">
+              <label for="password">Password</label>
+              <input id="password" type="password" required>
+            </div>
+            <div class="err" id="err" role="alert"></div>
+            <button class="btn" type="submit">Log in</button>
+          </form>
+
+          <div class="demo">
+            <b>Try a demo account</b>
+            <div class="demo-list">
+              <button type="button" data-u="admin" data-p="admin123">Admin<span>admin</span></button>
+              <button type="button" data-u="sharma" data-p="teacher123">Teacher<span>sharma</span></button>
+              <button type="button" data-u="aman" data-p="student123">Student<span>aman</span></button>
+              <button type="button" data-u="karan" data-p="student123">Low attendance<span>karan</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div id="signupPanel" style="display:none">
+          <h1>Request account</h1>
+          <p class="sub">Fill in your college verification details so the admin can confirm your identity.</p>
+
+          <form id="signupForm" autocomplete="off">
+            <div class="field">
+              <label for="signupRole">I am registering as</label>
+              <select id="signupRole" name="role" required></select>
+            </div>
+
+            <div class="field">
+              <label for="signupName">Full name (as on college ID)</label>
+              <input id="signupName" name="name" placeholder="e.g. Riya Sharma" required>
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+              <div class="field" style="min-width:140px">
+                <label for="signupEmail">College / Personal Email</label>
+                <input id="signupEmail" name="email" type="email" placeholder="name@college.edu" required>
+              </div>
+              <div class="field" style="min-width:140px">
+                <label for="signupPhone">Phone number</label>
+                <input id="signupPhone" name="phone" type="tel" placeholder="9876543210" required>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="signupDept">Department</label>
+              <input id="signupDept" name="department" placeholder="e.g. CSE / ECE / Mechanical" required>
+            </div>
+
+            <!-- Student-only fields -->
+            <div id="studentExtraFields">
+              <div class="row" style="margin-bottom:0">
+                <div class="field" style="min-width:120px">
+                  <label for="signupRoll">University Roll no.</label>
+                  <input id="signupRoll" name="roll_no" placeholder="e.g. CSE107">
+                </div>
+                <div class="field" style="min-width:120px">
+                  <label for="signupClass">Class / Section</label>
+                  <input id="signupClass" name="class_name" placeholder="e.g. CSE-A">
+                </div>
+              </div>
+              <div class="field">
+                <label for="signupBatch">Batch / Admission Year</label>
+                <input id="signupBatch" name="batch_year" placeholder="e.g. 2023-2027">
+              </div>
+            </div>
+
+            <!-- Teacher-only fields -->
+            <div id="teacherExtraFields" style="display:none">
+              <div class="row" style="margin-bottom:0">
+                <div class="field" style="min-width:120px">
+                  <label for="signupEmpId">Employee / Faculty ID</label>
+                  <input id="signupEmpId" name="employee_id" placeholder="e.g. FAC-119">
+                </div>
+                <div class="field" style="min-width:120px">
+                  <label for="signupDesig">Designation</label>
+                  <input id="signupDesig" name="designation" placeholder="e.g. Assistant Professor">
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="signupNote">Verification note (ID card #, subjects taught, advisor name, etc.)</label>
+              <input id="signupNote" name="verification_note" placeholder="Helps admin verify your account quickly">
+            </div>
+
+            <div class="row" style="margin-bottom:0">
+              <div class="field" style="min-width:140px">
+                <label for="signupUser">Choose Username</label>
+                <input id="signupUser" name="username" required>
+              </div>
+              <div class="field" style="min-width:140px">
+                <label for="signupPass">Password (min 6)</label>
+                <input id="signupPass" name="password" type="password" minlength="6" required>
+              </div>
+            </div>
+
+            <div class="err" id="signupErr" role="alert"></div>
+            <button class="btn" type="submit" id="signupSubmitBtn">Submit for admin approval</button>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div id="toast"></div>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

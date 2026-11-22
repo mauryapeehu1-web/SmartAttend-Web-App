@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartAttend – Teacher</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f2b01e'/%3E%3Cpath d='M9 17l5 5 9-11' fill='none' stroke='%230e2330' stroke-width='3.5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body data-page="teacher">
+  <div class="topbar">
+    <div class="brand"><span class="mark"></span>SmartAttend <small>Teacher</small></div>
+    <div class="user"><span>{{ name }}</span><a href="{{ url_for('logout') }}">Logout</a></div>
+  </div>
+
+  <div class="container">
+    <div class="page-head"><h1>Hello, {{ name }}</h1><p>Mark attendance, record marks and track assignments for your classes.</p></div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="attendance">Attendance</button>
+      <button class="tab-btn" data-tab="marks">Marks</button>
+      <button class="tab-btn" data-tab="assignments">Assignments</button>
+      <button class="tab-btn" data-tab="reports">Reports</button>
+    </div>
+
+    <!-- Attendance -->
+    <div class="tab active" id="tab-attendance">
+      <div id="notice"></div>
+
+      <div id="markSection">
+        <div class="card">
+          <h3>Mark attendance</h3>
+          <div class="row">
+            <div>
+              <label>Class &amp; subject</label>
+              <select id="subjectSelect"></select>
+            </div>
+            <div>
+              <label>Date</label>
+              <input type="date" id="dateInput">
+            </div>
+            <div style="flex:0 0 auto; min-width:0">
+              <button class="btn" id="loadBtn">Load students</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card table-wrap" id="markCard" style="display:none">
+          <div class="row" style="margin-bottom:6px">
+            <h3 id="markTitle" style="margin:0; flex:1"></h3>
+            <div style="flex:0 0 auto; min-width:0">
+              <button class="btn secondary" id="allPresent">All present</button>
+              <button class="btn secondary" id="allAbsent">All absent</button>
+            </div>
+          </div>
+          <div style="max-width:300px;margin-bottom:10px"><input type="search" id="markSearch" placeholder="Search name or roll no…"></div>
+          <div id="markTable"></div>
+          <div style="margin-top:16px"><button class="btn" id="saveBtn">Save attendance</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Marks -->
+    <div class="tab" id="tab-marks">
+      <div class="card">
+        <h3>Create assessment</h3>
+        <form class="inline" id="assessForm">
+          <div><label>Class &amp; subject</label><select name="subject_id" id="amSubject" required></select></div>
+          <div><label>Title</label><input name="title" placeholder="e.g. Mid-term 1" required></div>
+          <div><label>Type</label>
+            <select name="type"><option>Quiz</option><option>Mid-term</option><option>Final</option><option>Practical</option><option>Project</option></select></div>
+          <div><label>Max marks</label><input name="max_marks" type="number" min="1" step="0.5" required></div>
+          <div><label>Weightage %</label><input name="weightage" type="number" min="0" max="100" step="1" value="10"></div>
+          <div><label>Date</label><input name="date" type="date" id="amDate" required></div>
+          <div><button class="btn" type="submit">Create</button></div>
+        </form>
+      </div>
+
+      <div class="card table-wrap">
+        <h3>Assessments</h3>
+        <p class="muted">Students only see an assessment after you <b>publish</b> it, so you can enter marks first and release them when ready.</p>
+        <div id="assessTable"></div>
+      </div>
+
+      <div class="card table-wrap" id="entryCard" style="display:none">
+        <div class="row" style="margin-bottom:6px">
+          <h3 id="entryTitle" style="margin:0; flex:1"></h3>
+          <div style="flex:0 0 auto; min-width:0"><button class="btn secondary" id="entryClose">Close</button></div>
+        </div>
+        <p class="muted">Leave a mark blank if it isn't graded yet. “Absent” counts as 0 in totals.</p>
+        <div id="entryTable"></div>
+        <div style="margin-top:16px"><button class="btn" id="entrySave">Save marks</button></div>
+      </div>
+    </div>
+
+    <!-- Assignments -->
+    <div class="tab" id="tab-assignments">
+      <div class="card">
+        <h3>Post assignment</h3>
+        <form class="inline" id="assignForm">
+          <div><label>Class &amp; subject</label><select name="subject_id" id="asSubject" required></select></div>
+          <div><label>Title</label><input name="title" placeholder="e.g. Assignment 3 – Linked lists" required></div>
+          <div><label>Description (optional)</label><input name="description" maxlength="500" placeholder="What students need to do"></div>
+          <div><label>Due date</label><input name="due_date" type="date" id="asDue" required></div>
+          <div><label>Max marks</label><input name="max_marks" type="number" min="1" step="0.5" value="10" required></div>
+          <div><button class="btn" type="submit">Post</button></div>
+        </form>
+      </div>
+
+      <div class="card table-wrap">
+        <h3>Assignments</h3>
+        <div id="assignTable"></div>
+      </div>
+
+      <div class="card table-wrap" id="trackCard" style="display:none">
+        <div class="row" style="margin-bottom:6px">
+          <h3 id="trackTitle" style="margin:0; flex:1"></h3>
+          <div style="flex:0 0 auto; min-width:0">
+            <button class="btn secondary" id="trackAll">Mark all submitted</button>
+            <button class="btn secondary" id="trackClose">Close</button>
+          </div>
+        </div>
+        <div id="trackTable"></div>
+        <div style="margin-top:16px"><button class="btn" id="trackSave">Save submissions</button></div>
+      </div>
+    </div>
+
+    <!-- Reports -->
+    <div class="tab" id="tab-reports">
+      <div class="card" id="teacherReportsSection">
+        <h3>Attendance reports</h3>
+        <div class="row">
+          <div><label>Subject</label><select id="rSubject"></select></div>
+          <div><label>From</label><input type="date" id="rFrom"></div>
+          <div><label>To</label><input type="date" id="rTo"></div>
+          <div style="flex:0 0 auto;min-width:0"><label class="check"><input type="checkbox" id="rLow"> Below minimum only</label></div>
+        </div>
+        <div class="row">
+          <div style="flex:0 0 auto;min-width:0">
+            <button class="btn" id="rShow">Show report</button>
+            <button class="btn secondary" id="rLowBtn">Defaulters list</button>
+            <button class="btn secondary" id="rCsv">Download CSV</button>
+          </div>
+          <div><input type="search" id="rSearch" placeholder="Search name or roll no…"></div>
+        </div>
+      </div>
+
+      <div class="card table-wrap" id="teacherReportTableCard">
+        <div id="reportTable"><div class="empty">Choose a date range and click “Show report”.</div></div>
+      </div>
+
+      <div class="card table-wrap">
+        <div class="row" style="margin-bottom:6px">
+          <h3 style="margin:0;flex:1">Student overview</h3>
+          <div style="max-width:220px"><select id="riskFilter" aria-label="Filter students">
+            <option value="">All students</option><option value="risk">At risk</option><option value="watch">Needs attention</option>
+            <option value="flagged">At risk + needs attention</option><option value="ok">On track</option></select></div>
+          <div style="max-width:240px"><input type="search" id="riskSearch" placeholder="Search name or roll no…"></div>
+          <div style="flex:0 0 auto;min-width:0"><button class="btn secondary" id="riskBtn">Refresh</button></div>
+        </div>
+        <p class="muted" id="riskCount" style="margin-bottom:10px"></p>
+        <p class="muted">Every student with their standing — flagged for low attendance, low published marks, or two or more missing assignments. Based on the subjects you teach. Open a report card with the link in each row.</p>
+        <div id="riskTable"></div>
+      </div>    </div>
+  </div>
+
+  <div id="toast"></div>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

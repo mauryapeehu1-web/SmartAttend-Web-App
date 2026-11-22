@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Progress report – {{ st.student.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f2b01e'/%3E%3Cpath d='M9 17l5 5 9-11' fill='none' stroke='%230e2330' stroke-width='3.5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    @page { size: A4; margin: 12mm; }
+    body.rc-body { background: #e9edf0; }
+    .rc-toolbar { max-width: 210mm; margin: 18px auto 0; padding: 0 4px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .rc-toolbar a { color: var(--ink-2); text-decoration: none; font-weight: 600; font-size: 14px; }
+    .rc-sheet { max-width: 210mm; margin: 14px auto 40px; background: #fff; padding: 14mm 14mm 12mm; border-radius: 6px; box-shadow: var(--shadow); }
+    .rc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 14px; border-bottom: 3px solid var(--navy); margin-bottom: 18px; }
+    .rc-brand { color: var(--navy); }
+    .rc-title { text-align: right; }
+    .rc-title h1 { font-size: 24px; margin: 0; }
+    .rc-title p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+    .rc-student { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px 18px; margin-bottom: 18px; }
+    .rc-student div span { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .rc-student div b { font-size: 15px; }
+    .rc-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+    .rc-metric { border: 1px solid var(--line); border-top: 4px solid #cfd8de; border-radius: 8px; padding: 10px 12px; }
+    .rc-metric.good { border-top-color: var(--good); } .rc-metric.warn { border-top-color: var(--amber); } .rc-metric.bad { border-top-color: var(--bad); }
+    .rc-metric .v { font-family: var(--display); font-size: 26px; font-weight: 800; line-height: 1.1; }
+    .rc-metric .l { font-size: 12px; font-weight: 700; color: var(--ink-2); margin-top: 2px; }
+    .rc-metric .s { font-size: 11.5px; color: var(--muted); }
+    .rc-sheet h2 { font-size: 15px; margin: 22px 0 8px; text-transform: uppercase; letter-spacing: .06em; color: var(--teal); }
+    .rc-sheet table { font-size: 13px; }
+    .rc-sheet th, .rc-sheet td { padding: 8px 9px; }
+    .rc-sheet tbody tr:hover td { background: transparent; }
+    .rc-remarks { border: 1px solid var(--line); border-left: 5px solid var(--good); border-radius: 8px; padding: 12px 16px; font-size: 14px; }
+    .rc-remarks.watch { border-left-color: var(--amber); } .rc-remarks.risk { border-left-color: var(--bad); }
+    .rc-remarks ul { margin: 6px 0 0; padding-left: 18px; }
+    .rc-sign { display: flex; justify-content: space-between; gap: 30px; margin-top: 54px; }
+    .rc-sign div { flex: 1; border-top: 1.5px solid var(--ink); padding-top: 6px; font-size: 12.5px; color: var(--muted); text-align: center; }
+    .rc-foot { margin-top: 18px; font-size: 11.5px; color: var(--muted); text-align: center; }
+    @media (max-width: 700px) { .rc-metrics { grid-template-columns: 1fr 1fr; } .rc-sheet { padding: 18px; } .rc-head { flex-direction: column; } .rc-title { text-align: left; } }
+    @media print {
+      body.rc-body { background: #fff; }
+      .no-print { display: none !important; }
+      .rc-sheet { box-shadow: none; margin: 0; padding: 0; max-width: none; border-radius: 0; }
+      .rc-sheet table, .rc-metric, .rc-remarks { break-inside: avoid; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body class="rc-body">
+  <div class="rc-toolbar no-print">
+    <a href="{{ back_url }}">← Back</a>
+    <button class="btn" onclick="window.print()">Print / Save as PDF</button>
+  </div>
+
+  {% macro metric(label, value, status, sub) %}
+  <div class="rc-metric {{ status or '' }}">
+    <div class="v">{{ value }}</div><div class="l">{{ label }}</div><div class="s">{{ sub }}</div>
+  </div>
+  {% endmacro %}
+
+  <main class="rc-sheet">
+    <header class="rc-head">
+      <div class="brand rc-brand"><span class="mark"></span>SmartAttend</div>
+      <div class="rc-title"><h1>Student Progress Report</h1><p>Generated {{ today }}</p></div>
+    </header>
+
+    <section class="rc-student">
+      <div><span>Name</span><b>{{ st.student.name }}</b></div>
+      <div><span>Roll no.</span><b>{{ st.student.roll_no or '—' }}</b></div>
+      <div><span>Class</span><b>{{ st.student.class_name or '—' }}</b></div>
+      <div><span>Department</span><b>{{ st.student.department or '—' }}</b></div>
+      <div><span>Batch</span><b>{{ st.student.batch_year or '—' }}</b></div>
+    </section>
+
+    <section class="rc-metrics">
+      {{ metric('Attendance',
+                ('%g'|format(st.attendance.percent) ~ '%') if st.attendance.percent is not none else '–',
+                st.attendance.status, '%d of %d classes'|format(st.attendance.present, st.attendance.total)) }}
+      {% if st.marks.available %}
+        {{ metric('Average marks',
+                  ('%g'|format(st.marks.percent) ~ '%') if st.marks.percent is not none else '–',
+                  st.marks.status, ('Grade ' ~ st.marks.grade) if st.marks.grade else 'No results yet') }}
+      {% endif %}
+      {% if st.assignments.available %}
+        {{ metric('Assignments',
+                  ('%g'|format(st.assignments.percent) ~ '%') if st.assignments.percent is not none else '–',
+                  st.assignments.status, '%d of %d submitted'|format(st.assignments.done, st.assignments.due_total)) }}
+      {% endif %}
+      {{ metric('Standing', st.label, {'ok': 'good', 'watch': 'warn', 'risk': 'bad'}[st.level], '') }}
+    </section>
+
+    <h2>Subject summary</h2>
+    <table>
+      <thead><tr>
+        <th>Subject</th><th>Attendance</th>
+        {% if st.marks.available %}<th>Marks</th>{% endif %}
+        {% if st.assignments.available %}<th>Assignments</th>{% endif %}
+      </tr></thead>
+      <tbody>
+      {% for s in st.subjects %}
+        <tr>
+          <td><b>{{ s.name }}</b><br><small class="muted">{{ s.code }}</small></td>
+          <td>{% if s.att_percent is not none %}{{ s.att_present }}/{{ s.att_total }} · <b>{{ '%g'|format(s.att_percent) }}%</b>
+              {% if s.att_low %}<span class="badge bad">Low</span>{% endif %}{% else %}—{% endif %}</td>
+          {% if st.marks.available %}
+          <td>{% if s.marks_percent is not none %}<b>{{ '%g'|format(s.marks_percent) }}%</b> · Grade {{ s.marks_grade }}
+              {% if s.marks_low %}<span class="badge bad">Low</span>{% endif %}{% else %}—{% endif %}</td>
+          {% endif %}
+          {% if st.assignments.available %}
+          <td>{% if s.assignments %}{{ s.asg_done }} of {{ s.asg_due_total }} submitted{% if s.asg_missing + s.asg_overdue %} · <span class="badge bad">{{ s.asg_missing + s.asg_overdue }} missing</span>{% endif %}{% else %}—{% endif %}</td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    {% if st.marks.available %}
+      <h2>Published assessment results</h2>
+      <table>
+        <thead><tr><th>Subject</th><th>Assessment</th><th>Date</th><th>Score</th><th>%</th><th>Grade</th></tr></thead>
+        <tbody>
+        {% set ns = namespace(n=0) %}
+        {% for s in st.subjects %}{% for a in s.assessments %}{% set ns.n = ns.n + 1 %}
+          <tr>
+            <td>{{ s.name }}</td><td><b>{{ a.title }}</b> <small class="muted">({{ a.type }}, {{ '%g'|format(a.weightage) }}%)</small></td>
+            <td>{{ a.date }}</td>
+            <td>{% if a.absent %}Absent{% elif a.has_result %}{{ '%g'|format(a.score) }} / {{ '%g'|format(a.max_marks) }}{% else %}Not graded{% endif %}</td>
+            <td>{{ ('%g'|format(a.percent) ~ '%') if a.has_result else '—' }}</td>
+            <td>{{ a.grade or '—' }}</td>
+          </tr>
+        {% endfor %}{% endfor %}
+        {% if ns.n == 0 %}<tr><td colspan="6" class="muted">No results published yet.</td></tr>{% endif %}
+        </tbody>
+      </table>
+    {% endif %}
+
+    {% if st.assignments.available %}
+      <h2>Assignments</h2>
+      <table>
+        <thead><tr><th>Subject</th><th>Assignment</th><th>Due</th><th>Status</th><th>Marks</th></tr></thead>
+        <tbody>
+        {% set ns2 = namespace(n=0) %}
+        {% for s in st.subjects %}{% for a in s.assignments %}{% set ns2.n = ns2.n + 1 %}
+          <tr>
+            <td>{{ s.name }}</td><td><b>{{ a.title }}</b></td><td>{{ a.due_date }}</td>
+            <td>{{ 'Overdue' if a.overdue else a.status }}</td>
+            <td>{% if a.marks is not none %}{{ '%g'|format(a.marks) }} / {{ '%g'|format(a.max_marks) }}{% else %}—{% endif %}</td>
+          </tr>
+        {% endfor %}{% endfor %}
+        {% if ns2.n == 0 %}<tr><td colspan="5" class="muted">No assignments posted yet.</td></tr>{% endif %}
+        </tbody>
+      </table>
+    {% endif %}
+
+    {% if show_remarks %}
+      <h2>Remarks</h2>
+      <div class="rc-remarks {{ st.level }}">
+        {% if st.reasons %}
+          <b>{{ st.label }}</b> — areas to improve:
+          <ul>{% for r in st.reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+        {% else %}
+          <b>On track.</b> Attendance, marks and assignments are all within the expected range.
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="rc-sign"><div>Class teacher</div><div>Head of department</div><div>Parent / guardian</div></div>
+    <p class="rc-foot">Attendance minimum {{ st.thresholds.attendance }}% · Marks minimum {{ st.thresholds.marks }}% · Only published results are shown.{% if scope_note %} {{ scope_note }}{% endif %}</p>
+  </main>
+</body>
+</html>
